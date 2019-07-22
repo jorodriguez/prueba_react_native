@@ -25,8 +25,8 @@ export default class HomeClass extends React.Component {
     this.lista = [];
     this.state = {
       loaging: false,
-      refreshing:false,
-      selected: (new Map(): Map<string, boolean>)
+      refreshing:false,      
+      selected: (new Map())
     }
   }
 
@@ -52,7 +52,7 @@ export default class HomeClass extends React.Component {
 
   _keyExtractor = (item, index) => item.id;
 
-  _onPressItem = (id: string) => {
+  _onPressItem = (id) => {
 
     this.setState((state) => {
       const selected = new Map(state.selected);
@@ -62,7 +62,7 @@ export default class HomeClass extends React.Component {
   };
 
   _renderItem = ({ item }) => (
-    <MyListItem
+    <ItemCargo
       id={item.id}
       onPressItem={this._onPressItem}
       selected={!!this.state.selected.get(item.id)}
@@ -106,7 +106,7 @@ export default class HomeClass extends React.Component {
 }
 
 
-class MyListItem extends React.Component {
+class ItemCargo extends React.Component {
   constructor() {
     super();
 
@@ -138,7 +138,8 @@ class MyListItem extends React.Component {
             </Body>
             <Right>
               <Text style={{ color: textColor }}>{moment(this.props.item.fecha).format("DD MMM")}                 
-              { moment(this.props.item.hora).format("hh:mm")}</Text>
+              </Text>
+              {/*moment(this.props.item.hora).format("hh:mm")*/}
             </Right>
           </Left>
         </CardItem>
