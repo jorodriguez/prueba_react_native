@@ -7,25 +7,27 @@ import {
   Platform,
   ScrollView,
   StyleSheet,
+  Text,
   TouchableOpacity,
   SectionList,
   FlatList,
-  View,  
-  Span,
-  RefreshControl,
+  View,
+  Animated,
+  Button,
   Component
 } from 'react-native';
-import { Container, Header, Content, Card, CardItem, Text, Left, Icon, Thumbnail, Right, Button, Body } from "native-base";
+
+import { Container, Header, Content, Card, CardItem, Text, Body } from "native-base";
+
 
 import Loader from './Loader';
 
-export default class HomeClass extends React.Component {
+export default class HomeClass1 extends React.Component {
   constructor(props) {
     super(props);
     this.lista = [];
     this.state = {
       loaging: false,
-      refreshing:false,
       selected: (new Map(): Map<string, boolean>)
     }
   }
@@ -41,14 +43,9 @@ export default class HomeClass extends React.Component {
       .then(res => {
         this.lista = res;
         this.setState({ loading: false });
-        this.setState({refreshing: false});     
+        console.log(JSON.stringify(res));
       });
   };
-
-  _onRefresh = () => {
-    this.setState({refreshing: true});
-    this.getActividades();
-  }
 
   _keyExtractor = (item, index) => item.id;
 
@@ -62,6 +59,7 @@ export default class HomeClass extends React.Component {
   };
 
   _renderItem = ({ item }) => (
+
     <MyListItem
       id={item.id}
       onPressItem={this._onPressItem}
@@ -78,33 +76,85 @@ export default class HomeClass extends React.Component {
 
         <ScrollView
           style={styles.container}
-          refreshControl={
-            <RefreshControl
-              refreshing={this.state.refreshing}
-              onRefresh={this._onRefresh}
-            />
-          }
           contentContainerStyle={styles.contentContainer}>
 
           <View style={styles.getStartedContainer}>
-            {/*<DevelopmentModeNotice />*/}            
-            <Text  >Actividades de hoy</Text>            
+            <DevelopmentModeNotice />
+            <Text style={styles.getStartedText}>
+              Actividades del hoy
+              </Text>
           </View>
-          <Content padder >
+          <View style={styles.welcomeContainer}>
+            <Image
+              onPress={this.getActividades}
+              source={
+                __DEV__
+                  ? require('../assets/images/magic.jpeg')
+                  : require('../assets/images/magic.jpeg')
+              }
+              style={styles.welcomeImage}
+            />
+          </View>
+          }
+
+
+            <View style={styles.container}>
             <FlatList
               data={this.lista}
               renderItem={this._renderItem}
               keyExtractor={(item, index) => index}
             />
-          </Content>
+          </View>
+
 
         </ScrollView>
 
       </View>
     );
+
+    /* render() {
+       return (
+         <View style={styles.container}>
+           <Loader
+             loading={this.state.loading} />
+   
+           <ScrollView
+             style={styles.container}
+             contentContainerStyle={styles.contentContainer}>
+             <View style={styles.welcomeContainer}>
+               <Image
+                 onPress={this.getActividades}
+                 source={
+                   __DEV__
+                     ? require('../assets/images/magic.jpeg')
+                     : require('../assets/images/magic.jpeg')
+                 }
+                 style={styles.welcomeImage}
+               />
+             </View>
+   
+             <View style={styles.getStartedContainer}>
+               <DevelopmentModeNotice />
+               <Text style={styles.getStartedText}>
+                 Actividades del hoy
+                 </Text>
+             </View>
+   
+             <View style={styles.container}>
+               <FlatList
+                 data={this.lista}
+                 renderItem={this._renderItem}
+                 keyExtractor={(item, index) => index}
+               />
+             </View>
+   
+           </ScrollView>
+   
+         </View>
+       );
+     }*/
   }
 }
-
 
 class MyListItem extends React.Component {
   constructor() {
@@ -123,52 +173,29 @@ class MyListItem extends React.Component {
   render() {
     const textColor = this.props.selected ? 'red' : 'black';
     return (
+      <TouchableOpacity onPress={this._onPress}>
+        <View style={this.estiloActividad.container}>
+          <View style={this.estiloActividad.itemImage}>
+            <Image
+              onPress={this.getActividades}
+              source={require('../assets/images/alumno_generic_50_50.png')}
+              style={styles.alumnoImage}
+            />
+          </View>
+          <View style={this.estiloActividad.containerActividad}>
+            <View style={this.estiloActividad.headerActividad}>
+              <View style={{ alignContent: 'flex-end' }} ><Text style={{ color: textColor }}>{this.props.item.actividad}</Text></View>
 
-      <Card >
-        <CardItem>
-          <Left>
-            <Thumbnail source={
-              __DEV__
-                ? require('../assets/images/alumno_generic_50_50.png')
-                : require('../assets/images/alumno_generic_50_50.png')
-            } />
-            <Body>
-              <Text>{this.props.item.actividad}</Text>
-              <Text note>{this.props.item.nombre_alumno}</Text>
-            </Body>
-            <Right>
-              <Text style={{ color: textColor }}>{moment(this.props.item.fecha).format("DD MMM")}                 
-              { moment(this.props.item.hora).format("hh:mm")}</Text>
-            </Right>
-          </Left>
-        </CardItem>
-        <CardItem bordered>
-          <Body>                                   
-            <Text>
-              {this.props.item.nota}
-            </Text>
-          </Body>
-        </CardItem>
-        {
-        /*<CardItem footer bordered>
-          <Left>
-            <Button transparent>
-              <Icon active name="thumbs-up" />
-              <Text>12 Likes</Text>
-            </Button>
-          </Left>
-          <Body>
-            <Button transparent>
-              <Icon active name="chatbubbles" />
-              <Text>4 Comments</Text>
-            </Button>
-          </Body>
-          <Right>
-            <Text>11h ago</Text>
-          </Right>
-        </CardItem>
-        */}
-      </Card>
+              <View><Text style={{ color: textColor }}>{moment(this.props.item.fecha).format("DD MMM")}</Text></View>
+            </View>
+            <View>
+              <Text>{this.props.item.nota} </Text>
+              <Text>{this.props.item.nota} </Text>
+              <Text>{this.props.item.nota} </Text>
+            </View>
+          </View>
+        </View>
+      </TouchableOpacity>
     );
   }
 
@@ -280,13 +307,6 @@ const styles = StyleSheet.create({
   welcomeImage: {
     width: 90,
     height: 70,
-    resizeMode: 'contain',
-    marginTop: 3,
-    marginLeft: -10,
-  },
-  logoNoticeImage: {
-    width: 60,
-    height: 40,
     resizeMode: 'contain',
     marginTop: 3,
     marginLeft: -10,

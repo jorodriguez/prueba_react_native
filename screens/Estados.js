@@ -19,24 +19,27 @@ import { Container, Header, Content, Card, CardItem, Text, Left, Icon, Thumbnail
 
 import Loader from './Loader';
 
-export default class HomeClass extends React.Component {
+export default class Estados extends React.Component {
   constructor(props) {
     super(props);
     this.lista = [];
+    this.ds = new ListView.DataSource({ rowHasChanged: (r1, r2) => r1 !== r2 });
+  
     this.state = {
       loaging: false,
       refreshing:false,
-      selected: (new Map(): Map<string, boolean>)
+      basic: true,
+      listViewData: lista,    
     }
   }
 
   componentDidMount() {
-    this.getActividades();
+    this.getCargos();
   }
 
-  getActividades = () => {
+  getCargos = () => {
     this.setState({ loading: true });
-    fetch('https://api-ambiente-desarrollo.herokuapp.com/actividades/63')
+    fetch('https://api-ambiente-desarrollo.herokuapp.com/cargos_alumno/63')
       .then(res => res.json())
       .then(res => {
         this.lista = res;
@@ -50,27 +53,15 @@ export default class HomeClass extends React.Component {
     this.getActividades();
   }
 
-  _keyExtractor = (item, index) => item.id;
+  deleteRow(secId, rowId, rowMap) {
+    rowMap[`${secId}${rowId}`].props.closeRow();
+    const newData = [...this.state.listViewData];
+    newData.splice(rowId, 1);
+    this.setState({ listViewData: newData });
+  }
 
-  _onPressItem = (id: string) => {
-
-    this.setState((state) => {
-      const selected = new Map(state.selected);
-      selected.set(id, !selected.get(id)); // toggle
-      return { selected };
-    });
-  };
-
-  _renderItem = ({ item }) => (
-    <MyListItem
-      id={item.id}
-      onPressItem={this._onPressItem}
-      selected={!!this.state.selected.get(item.id)}
-      item={item}
-    />
-  );
-
-  render() {
+   render() {
+    const ds = new ListView.DataSource({ rowHasChanged: (r1, r2) => r1 !== r2 });  
     return (
       <View style={styles.container}>
         <Loader
@@ -84,20 +75,30 @@ export default class HomeClass extends React.Component {
               onRefresh={this._onRefresh}
             />
           }
-          contentContainerStyle={styles.contentContainer}>
-
-          <View style={styles.getStartedContainer}>
-            {/*<DevelopmentModeNotice />*/}            
-            <Text  >Actividades de hoy</Text>            
-          </View>
-          <Content padder >
-            <FlatList
-              data={this.lista}
-              renderItem={this._renderItem}
-              keyExtractor={(item, index) => index}
-            />
-          </Content>
-
+          contentContainerStyle={styles.contentContainer}> 
+          
+   
+          <Content>
+                <List
+                  leftOpenValue={75}
+                  rightOpenValue={-75}
+                  dataSource={this.ds.cloneWithRows(this.state.listViewData)}
+                  renderRow={data =>
+                    <ListItem>
+                      <Text> {data} </Text>
+                    </ListItem>}
+                  renderLeftHiddenRow={data =>
+                    <Button full onPress={() => alert(data)}>
+                      <Icon active name="information-circle" />
+                    </Button>}
+                  renderRightHiddenRow={(data, secId, rowId, rowMap) =>
+                    <Button full danger onPress={_ => this.deleteRow(secId, rowId, rowMap)}>
+                      <Icon active name="trash" />
+                    </Button>}
+                />
+              </Content>
+   
+        }         
         </ScrollView>
 
       </View>
