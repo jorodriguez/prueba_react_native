@@ -62,7 +62,7 @@ export default class HomeClass extends React.Component {
   };
 
   _renderItem = ({ item }) => (
-    <ItemCargo
+    <ItemActividad
       id={item.id}
       onPressItem={this._onPressItem}
       selected={!!this.state.selected.get(item.id)}
@@ -88,7 +88,7 @@ export default class HomeClass extends React.Component {
 
           <View style={styles.getStartedContainer}>
             {/*<DevelopmentModeNotice />*/}            
-            <Text  >Actividades de hoy</Text>            
+            <Text>Actividades de hoy</Text>            
           </View>
           <Content padder >
             <FlatList
@@ -106,7 +106,7 @@ export default class HomeClass extends React.Component {
 }
 
 
-class ItemCargo extends React.Component {
+class ItemActividad extends React.Component {
   constructor() {
     super();
 

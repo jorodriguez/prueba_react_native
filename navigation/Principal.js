@@ -28,7 +28,7 @@ export default class Principal extends React.Component {
               <HomeClass />
             </Tab>
             <Tab heading={<TabHeading><Icon name="md-eye" /><Text>Estados</Text></TabHeading>}>
-              <Estados />
+              <LinksScreen />
             </Tab>
             <Tab heading={<TabHeading><Icon name="md-cog" /><Text>Cuenta</Text></TabHeading>}>
               <SettingsScreen />

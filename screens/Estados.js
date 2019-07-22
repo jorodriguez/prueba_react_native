@@ -25,7 +25,7 @@ export default class Estados extends React.Component {
     this.state = {
       loaging: false,
       refreshing: false,
-      selected: (new Map(): Map<string, boolean>)   
+      selected: (new Map())   
     }
   }
 
@@ -128,8 +128,10 @@ class ItemCargo extends React.Component {
         </CardItem>
         <CardItem>
           <Body>
-            <Text>{this.props.item.cargo}</Text>
+            {/*<Text>{this.props.item.cargo}</Text>
             <Text>{this.props.item.total_pagado}</Text>
+    */}
+            
           </Body>
         </CardItem>
       </Card>
