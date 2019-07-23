@@ -6,6 +6,16 @@ import { Platform, StatusBar, StyleSheet, View } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 
 import AppNavigator from './navigation/AppNavigator';
+import Principal from './navigation/Principal';
+import Login from './screens/Login';
+
+import { HeaderBackButton } from 'react-navigation';
+import {createStackNavigator, createAppContainer} from 'react-navigation';
+
+const MainNavigator = createStackNavigator({
+  Login: {screen: Principal},
+  Principal: {screen: Principal},
+});
 
 export default function App(props) {
   const [isLoadingComplete, setLoadingComplete] = useState(false);
@@ -22,7 +32,9 @@ export default function App(props) {
     return (
       <View style={styles.container}>
         {Platform.OS === 'ios' && <StatusBar barStyle="default" />}
-        <AppNavigator />
+    <Principal />
+      
+      {/*<Login/>*/}
       </View>
     );
   }
@@ -64,5 +76,6 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: '#fff',
+    paddingTop:20
   },
 });

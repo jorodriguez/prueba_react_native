@@ -18,13 +18,14 @@ import {
 import { Container, Header, Content, Card, CardItem, Text, Left, Icon, Thumbnail, Right, Button, Body } from "native-base";
 
 import Loader from './Loader';
-
+//https://oblador.github.io/react-native-vector-icons/
+//https://www.bootdey.com/react-native-snippet/9/Login-form-ui-example
 export default class HomeClass extends React.Component {
   constructor(props) {
     super(props);
     this.lista = [];
     this.state = {
-      loaging: false,
+      loading: false,
       refreshing:false,      
       selected: (new Map())
     }
@@ -40,8 +41,7 @@ export default class HomeClass extends React.Component {
       .then(res => res.json())
       .then(res => {
         this.lista = res;
-        this.setState({ loading: false });
-        this.setState({refreshing: false});     
+        this.setState({ loading: false,refreshing: false });        
       });
   };
 
@@ -53,7 +53,6 @@ export default class HomeClass extends React.Component {
   _keyExtractor = (item, index) => item.id;
 
   _onPressItem = (id) => {
-
     this.setState((state) => {
       const selected = new Map(state.selected);
       selected.set(id, !selected.get(id)); // toggle
@@ -63,8 +62,7 @@ export default class HomeClass extends React.Component {
 
   _renderItem = ({ item }) => (
     <ItemActividad
-      id={item.id}
-      onPressItem={this._onPressItem}
+      id={item.id}      
       selected={!!this.state.selected.get(item.id)}
       item={item}
     />
@@ -94,7 +92,7 @@ export default class HomeClass extends React.Component {
             <FlatList
               data={this.lista}
               renderItem={this._renderItem}
-              keyExtractor={(item, index) => index}
+              keyExtractor={(item,index) => index.toString()}
             />
           </Content>
 
@@ -120,24 +118,22 @@ class ItemActividad extends React.Component {
 
   }
 
-  render() {
-    const textColor = this.props.selected ? 'red' : 'black';
+  render() {    
     return (
-
       <Card >
         <CardItem>
-          <Left>
-            <Thumbnail source={
-              __DEV__
-                ? require('../assets/images/alumno_generic_50_50.png')
-                : require('../assets/images/alumno_generic_50_50.png')
-            } />
-            <Body>
+          <Left>             
+            <Icon name={this.props.item.icono}
+                  type="FontAwesome"
+                  style={{fontSize: 30, color: '#BC6CE9'}}/>         
+            <Body>              
               <Text>{this.props.item.actividad}</Text>
-              <Text note>{this.props.item.nombre_alumno}</Text>
+              <Text note style={{ fontSize:10 }}>{this.props.item.nombre_alumno}</Text>
             </Body>
             <Right>
-              <Text style={{ color: textColor }}>{moment(this.props.item.fecha).format("DD MMM")}                 
+              <Text note style={{ fontSize:10 }}>{moment(this.props.item.fecha).format("DD MMM")}                  
+              {moment(this.props.item.hora).format("HH:mm a")}    
+              {/*<Text style={{ color: textColor }}>{moment(this.props.item.fecha).fromNow()format("DD MMM")} */}
               </Text>
               {/*moment(this.props.item.hora).format("hh:mm")*/}
             </Right>
@@ -220,7 +216,8 @@ class ItemActividad extends React.Component {
       alignItems: 'flex-start',
       alignContent: "center",
       paddingBottom: 1,
-    }
+    },
+
   });
 
 }
