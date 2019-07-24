@@ -4,15 +4,13 @@ import { Platform,Image,StyleSheet } from 'react-native';
 
 import { Container, Header, Content, Tab, Tabs, TabHeading,Thumbnail, Icon, Text, Left,Body, Button, Title, Right } from 'native-base';
 import HomeClass from '../screens/HomeClass';
-import LinksScreen from '../screens/LinksScreen';
 import Estados from '../screens/Estados';
 import SettingsScreen from '../screens/SettingsScreen';
 
 export default class Principal extends React.Component {
-  render() {
-   
+  render() {   
     return (
-      <Container>        
+      <Container >        
         <Header>
           <Left>
             {/*
@@ -45,7 +43,18 @@ export default class Principal extends React.Component {
       </Container>
     );
   }
-
 }
 
+Principal.navigationOptions = {
+  header: null,
+  title: 'Principal',
+};
 
+
+const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+    backgroundColor: 'black',
+    paddingTop: 0
+  },
+});

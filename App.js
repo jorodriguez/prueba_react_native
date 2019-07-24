@@ -8,14 +8,28 @@ import { Ionicons } from '@expo/vector-icons';
 import AppNavigator from './navigation/AppNavigator';
 import Principal from './navigation/Principal';
 import Login from './screens/Login';
+import LinksScreen from './screens/LinksScreen';
+import AuthLoadingScreen from './navigation/AuthLoadingScreen';
 
 import { HeaderBackButton } from 'react-navigation';
-import {createStackNavigator, createAppContainer} from 'react-navigation';
+import { createStackNavigator, createAppContainer, createSwitchNavigator } from 'react-navigation';
 
-const MainNavigator = createStackNavigator({
-  Login: {screen: Principal},
-  Principal: {screen: Principal},
-});
+const MainNavigator = createStackNavigator(
+  {
+    Principal: Principal
+  }
+);
+
+const AppContainer = createAppContainer(
+  createSwitchNavigator({
+    AuthLoading: AuthLoadingScreen,
+    principal: MainNavigator,
+    Login: Login
+  },
+    {
+      initialRouteName: 'AuthLoading',
+    }
+  ));
 
 export default function App(props) {
   const [isLoadingComplete, setLoadingComplete] = useState(false);
@@ -31,10 +45,8 @@ export default function App(props) {
   } else {
     return (
       <View style={styles.container}>
-        {Platform.OS === 'ios' && <StatusBar barStyle="default" />}
-    <Principal />
-      
-      {/*<Login/>*/}
+        {/*Platform.OS === 'ios' && <StatusBar barStyle="default" />*/}
+        <AppContainer />
       </View>
     );
   }
@@ -62,7 +74,7 @@ async function loadResourcesAsync() {
 }
 
 
-function handleLoadingError(error: Error) {
+function handleLoadingError(error) {
   // In this case, you might want to report the error to your error reporting
   // service, for example Sentry
   console.warn(error);
@@ -75,7 +87,7 @@ function handleFinishLoading(setLoadingComplete) {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#fff',
-    paddingTop:20
+    backgroundColor: 'black',
+    paddingTop: 25
   },
 });
