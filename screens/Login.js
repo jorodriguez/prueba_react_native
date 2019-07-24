@@ -11,6 +11,8 @@ import {
     AsyncStorage
 } from 'react-native';
 
+//import StorageHelper from '../Helpers/StorageHelper';
+
 export default class Login extends React.Component {
 
     constructor(props) {
@@ -26,8 +28,7 @@ export default class Login extends React.Component {
         }
     }
 
-    onClickListener = (viewId) => {
-      
+    onClickListener = (viewId) => { 
        
 
         if (this.state.email == '') {
@@ -54,16 +55,17 @@ export default class Login extends React.Component {
                     }
                 )
                     .then(function(res){ return res.json(); })
-                    .then(function(data){
-
+                    .then((data) =>{
                         this.usuario = data;                        
                         
-                        //Alert.alert("Usuario", "dentro "+JSON.stringify(data));
+                        Alert.alert("Usuario", "dentro "+JSON.stringify(data));
                         that.setState({ loading: false });
                         if (this.usuario.auth) {
 
-                            AsyncStorage.setItem('logeado', this.usuario.auth);
-                            AsyncStorage.setItem('usuario', this.usuario.token);
+                            AsyncStorage.setItem('logeado', JSON.stringify(this.usuario.auth));
+                            AsyncStorage.setItem('usuario', JSON.stringify(this.usuario));
+                            //StorageHelper.set('logeado', JSON.stringify(this.usuario.auth));
+                            //StorageHelper.set('usuario', JSON.stringify(this.usuario));
 
                             that.props.navigation.navigate('Principal', { usuario: this.usuario });
                         } else {
