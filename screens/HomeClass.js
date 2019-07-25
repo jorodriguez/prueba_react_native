@@ -10,10 +10,11 @@ import {
   TouchableOpacity,
   SectionList,
   FlatList,
-  View,  
+  View,
   Span,
   RefreshControl,
-  Component
+  AsyncStorage,
+  Component, Alert
 } from 'react-native';
 import { Container, Header, Content, Card, CardItem, Text, Left, Icon, Thumbnail, Right, Button, Body } from "native-base";
 
@@ -26,27 +27,49 @@ export default class HomeClass extends React.Component {
     this.lista = [];
     this.state = {
       loading: false,
-      refreshing:false,      
-      selected: (new Map())
-    }
+      refreshing: false,
+      selected: (new Map()),
+      token: "",
+      usuarioSesion: null
+    }    
   }
 
+  _recogerUsuarioSesion = async () => {
+    const user = await AsyncStorage.getItem('usuario');
+    const token = await AsyncStorage.getItem('userToken');
+    this.setState({ token: token });
+    this.setState({ usuarioSesion: JSON.parse(user) });
+  };
+
   componentDidMount() {
-    this.getActividades();
+    this._recogerUsuarioSesion()
+      .then(() => {
+        this.getActividades();
+      }).catch((e) => {
+        Alert.alert("Error", "Al cargar las actividades");
+      });
   }
 
   getActividades = () => {
     this.setState({ loading: true });
-    fetch('https://api-ambiente-desarrollo.herokuapp.com/actividades/63')
+    fetch('https://api-ambiente-desarrollo.herokuapp.com/actividades/'+this.state.usuarioSesion.id,
+      {
+        headers: {
+          'Content-Type': "application/json", 'x-access-token': 'Token ' + this.state.token
+        },
+      })
       .then(res => res.json())
       .then(res => {
         this.lista = res;
-        this.setState({ loading: false,refreshing: false });        
+        this.setState({ loading: false, refreshing: false });
+      })
+      .catch((e) => {
+        Alert.alert("Error", "Al cargar las actividades");
       });
   };
 
   _onRefresh = () => {
-    this.setState({refreshing: true});
+    this.setState({ refreshing: true });
     this.getActividades();
   }
 
@@ -62,7 +85,7 @@ export default class HomeClass extends React.Component {
 
   _renderItem = ({ item }) => (
     <ItemActividad
-      id={item.id}      
+      id={item.id}
       selected={!!this.state.selected.get(item.id)}
       item={item}
     />
@@ -85,17 +108,16 @@ export default class HomeClass extends React.Component {
           contentContainerStyle={styles.contentContainer}>
 
           <View style={styles.getStartedContainer}>
-            {/*<DevelopmentModeNotice />*/}            
-            <Text>Actividades de hoy</Text>            
+            {/*<DevelopmentModeNotice />*/}
+            <Text>Actividades de hoy</Text>
           </View>
           <Content padder >
             <FlatList
               data={this.lista}
               renderItem={this._renderItem}
-              keyExtractor={(item,index) => index.toString()}
+              keyExtractor={(item, index) => index.toString()}
             />
           </Content>
-
         </ScrollView>
 
       </View>
@@ -118,29 +140,29 @@ class ItemActividad extends React.Component {
 
   }
 
-  render() {    
+  render() {
     return (
       <Card >
         <CardItem>
-          <Left>             
+          <Left>
             <Icon name={this.props.item.icono}
-                  type="FontAwesome"
-                  style={{fontSize: 30, color: '#BC6CE9'}}/>         
-            <Body>              
+              type="FontAwesome"
+              style={{ fontSize: 30, color: '#BC6CE9' }} />
+            <Body>
               <Text>{this.props.item.actividad}</Text>
-              <Text note style={{ fontSize:10 }}>{this.props.item.nombre_alumno}</Text>
+              <Text note style={{ fontSize: 10 }}>{this.props.item.nombre_alumno}</Text>
             </Body>
             <Right>
-              <Text note style={{ fontSize:10 }}>{moment(this.props.item.fecha).format("DD MMM")}                  
-              {moment(this.props.item.hora).format("HH:mm a")}    
-              {/*<Text style={{ color: textColor }}>{moment(this.props.item.fecha).fromNow()format("DD MMM")} */}
+              <Text note style={{ fontSize: 10 }}>{moment(this.props.item.fecha).format("DD MMM")}
+                {moment(this.props.item.hora).format("HH:mm a")}
+                {/*<Text style={{ color: textColor }}>{moment(this.props.item.fecha).fromNow()format("DD MMM")} */}
               </Text>
               {/*moment(this.props.item.hora).format("hh:mm")*/}
             </Right>
           </Left>
         </CardItem>
         <CardItem bordered>
-          <Body>                                   
+          <Body>
             <Text>
               {this.props.item.nota}
             </Text>

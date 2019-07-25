@@ -14,7 +14,8 @@ export default class Principal extends React.Component {
 
     this.state = {
       loading: false,
-       usuarioSesion : null
+      usuarioSesion : null,
+      token : ""
     }
     this._bootstrapAsync();
   }
@@ -23,23 +24,25 @@ export default class Principal extends React.Component {
 
   }
    
-  _bootstrapAsync = async () => {
-    
-      const usuario = await AsyncStorage.getItem('usuario');
-      this.setState({usuarioSesion :usuario});
+  _bootstrapAsync = async () => {    
+    const user = await AsyncStorage.getItem('usuario');
+    const token = await AsyncStorage.getItem('userToken');            
+    this.setState({token : token});
+    this.setState({usuarioSesion : JSON.parse(user)});
+    //Alert.alert("usari",this.state.usuarioSesion);
   };
 
   salir = () => { 
     AsyncStorage.removeItem('logeado');
     AsyncStorage.removeItem('usuario');
+    AsyncStorage.removeItem('userToken');
     this.props.navigation.navigate('AuthLoading', {});
+    //Alert.alert("usari",this.state.usuarioSesion);
   }
 
   render() {
-
     return (
-      <Container >
-        <Text>{JSON.stringify(this.usuarioSesionStore)}</Text>
+      <Container >        
         <Header>
           <Left>
             {/*
@@ -49,7 +52,7 @@ export default class Principal extends React.Component {
             <Thumbnail source={require('../assets/images/padre_avatar.png')} />
           </Left>
           <Body>
-            <Title>{JSON.stringify(this.state.usuarioSesion)}</Title>
+          <Title style={styles.titulo}>{this.state.usuarioSesion != null ? this.state.usuarioSesion.nombre : "-"}</Title>            
           </Body>
           <Right >
             <Button onPress={this.salir}><Text>Salir</Text></Button>
@@ -59,11 +62,11 @@ export default class Principal extends React.Component {
         <Tabs tabBarPosition="top">
           <Tab
             heading={<TabHeading ><Icon type="FontAwesome" name="smile-o" /><Text>Inicio</Text></TabHeading>}>
-            <HomeClass />
+            <HomeClass token={this.state.token} />
           </Tab>
           <Tab
             heading={<TabHeading><Icon name="list" /><Text>Balance</Text></TabHeading>}>
-            <Estados />
+            <Estados token={this.state.token} />
           </Tab>
           <Tab
             heading={<TabHeading><Icon name="md-cog" /><Text>Cuenta</Text></TabHeading>}>
@@ -86,5 +89,7 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: 'black',
     paddingTop: 0
-  },
+  },titulo:{
+    fontSize:12,    
+  }
 });

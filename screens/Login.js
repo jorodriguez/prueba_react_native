@@ -23,8 +23,8 @@ export default class Login extends React.Component {
         };
         this.state = {
             loading: false,
-            email: '',
-            password: '',
+            email: 'joel.rod.roj@hotmail.com',
+            password: '123',
         }
     }
 
@@ -58,15 +58,17 @@ export default class Login extends React.Component {
                     .then((data) =>{
                         this.usuario = data;                        
                         
-                        Alert.alert("Usuario", "dentro "+JSON.stringify(data));
+                        //Alert.alert("Usuario", "dentro "+JSON.stringify(data));
                         that.setState({ loading: false });
                         if (this.usuario.auth) {
 
-                            AsyncStorage.setItem('logeado', JSON.stringify(this.usuario.auth));
-                            AsyncStorage.setItem('usuario', JSON.stringify(this.usuario));
-                            //StorageHelper.set('logeado', JSON.stringify(this.usuario.auth));
-                            //StorageHelper.set('usuario', JSON.stringify(this.usuario));
+                            delete this.usuario.usuario.mensaje;
+                            delete this.usuario.usuario.password;
 
+                            AsyncStorage.setItem('logeado', JSON.stringify(this.usuario.auth));
+                            AsyncStorage.setItem('userToken',this.usuario.token);
+                            AsyncStorage.setItem('usuario', JSON.stringify(this.usuario.usuario));
+                            
                             that.props.navigation.navigate('Principal', { usuario: this.usuario });
                         } else {
                             Alert.alert("Usuario no encotrado", this.usuario.mensaje);

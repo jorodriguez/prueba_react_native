@@ -10,46 +10,93 @@ import {
   ListView,
   RefreshControl,
   Component,
+  Alert,
+  AsyncStorage,
   FlatList,Modal
 } from 'react-native';
-import { Container, Header, Content, Button, Icon, List, ListItem, Text, Card, CardItem, Body, Right, Left } from "native-base";
+import { Container, Header, Content, Button, Icon, List, ListItem, Text, Card, CardItem, Body, Right, Thumbnail, Left } from "native-base";
 
 import Loader from './Loader';
 
 export default class Estados extends React.Component {
   constructor(props) {
     super(props);
-    this.lista = [];
+    this.listaCargos = [];
+    this.listaCargosPagados = [];
+    this.listaBalances = [];
     this.balance = {};
 
     this.state = {
       loading: false,
       refreshing: false,
-      selected: (new Map())
+      selected: (new Map()),
+      token: "",
+      usuarioSesion: null
     }
   }
 
   componentDidMount() {
-    this.getCargos();
-    this.getBalance();
+    this._recogerUsuarioSesion()
+    .then(() => {
+        this.getCargos();
+        this.getBalance();
+    }).catch((e) => {
+      Alert.alert("Error", "Al cargar actualizar "+e);
+    });    
   }
 
-  getCargos = () => {
-    this.setState({ loading: true });
-    fetch('https://api-ambiente-desarrollo.herokuapp.com/cargos_alumno/63')
+  _recogerUsuarioSesion = async () => {
+    const user = await AsyncStorage.getItem('usuario');
+    const token = await AsyncStorage.getItem('userToken');
+    this.setState({ token: token });
+    this.setState({ usuarioSesion: JSON.parse(user) });
+  };
+
+
+ getCargos = () => {
+    this.setState({ loading: true })
+    fetch('https://api-ambiente-desarrollo.herokuapp.com/cargos_familiar/'+this.usuarioSesion.id,{
+      headers:{
+        'Content-Type': "application/json",
+        'x-access-token': 'Token ' + this.state.token
+      },
+    })        
       .then(res => res.json())
       .then(res => {
-        this.lista = res;
+        this.listaCargos = res;
         this.setState({ loading: false });
         this.setState({ refreshing: false });
       });
   };
-  getBalance = () => {
-    this.setState({ loading: true });
-    fetch('https://api-ambiente-desarrollo.herokuapp.com/balance_alumno/63')
+
+  getCargosPagados = () => {
+    this.setState({ loading: true })
+    fetch('https://api-ambiente-desarrollo.herokuapp.com/cargos_pagados_familiar/'+this.usuarioSesion.id,{
+      headers:{
+        'Content-Type': "application/json",
+        'x-access-token': 'Token ' + this.state.token
+      },
+    })        
       .then(res => res.json())
       .then(res => {
-        this.balance = res;
+        this.listaCargosPagados = res;
+        this.setState({ loading: false });
+        this.setState({ refreshing: false });
+      });
+  };
+
+  getBalance = () => {
+    this.setState({ loading: true });
+    fetch('https://api-ambiente-desarrollo.herokuapp.com/balance_familiar_alumno/'+this.usuarioSesion.id,{
+      headers:{
+        'Content-Type': "application/json",
+        'x-access-token': 'Token ' + this.state.token
+      },
+    }
+    )
+      .then(res => res.json())
+      .then(res => {
+        this.listaBalances = res;
         this.setState({ loading: false });
         this.setState({ refreshing: false });
       });
@@ -62,7 +109,8 @@ export default class Estados extends React.Component {
     this.getBalance();
   }
 
-  _keyExtractor = (item, index) => item.id_cargo_balance_alumno.toString();
+  _keyExtractorCargo = (item, index) => item.id_cargo_balance_alumno.toString();  
+  _keyExtractorBalance = (item, index) => item.id.toString();
 
   _onPressItem = (id) => {
     this.setState((state) => {
@@ -73,7 +121,7 @@ export default class Estados extends React.Component {
 
   };
 
-  _renderItem = ({ item }) => (
+  _renderItemCargo = ({ item }) => (
     <ItemCargo
       id={item.id_cargo_balance_alumno}
       selected={!!this.state.selected.get(item.id)}
@@ -81,14 +129,16 @@ export default class Estados extends React.Component {
     />
   );
 
+  _renderItemBalance = ({ item }) => (
+    <Balance item={item}></Balance>    
+  );
  
+  
   render() {
     return (
       <View style={styles.container}>
         <Loader
-          loading={this.state.loading} />
-                  
-        <Balance item={this.balance}></Balance>
+          loading={this.state.loading} />                       
         
         <ScrollView
           style={styles.container}
@@ -101,9 +151,21 @@ export default class Estados extends React.Component {
           <Content style={styles.container}>
             <Card>
               <FlatList
-                data={this.lista}
-                renderItem={this._renderItem}
-                keyExtractor={this._keyExtractor}
+                data={this.listaBalances}
+                renderItem={this._renderItemBalance}
+                keyExtractor={this._keyExtractorBalance}
+              />
+            </Card>
+          </Content>
+          <Text>Cargos</Text>
+            
+          
+          <Content style={styles.container}>
+            <Card>
+              <FlatList
+                data={this.listaCargos}
+                renderItem={this._renderItemCargo}
+                keyExtractor={this._keyExtractorCargo}
               />
             </Card>
           </Content>
@@ -144,6 +206,8 @@ class ItemCargo extends React.Component {
 }
 
 
+
+
 class Balance extends React.Component {
   constructor(props) {
     super(props);            
@@ -155,19 +219,22 @@ class Balance extends React.Component {
 
   }
  render (){
-  return (
-    
-    <View style={styles.bordeRojo}>
+  return (    
+    <Card style={styles.bordeRojo}>
        <CardItem header bordered button onPress={() => {<PupupCargo visible={true} item={this.props.item} />} } footer bordered>
+       <Left>
+            <Thumbnail source={require('../assets/images/alumno_generic_50_50.png')} />
+            <Text>{this.props.item.nombre_alumno} {this.props.item.apellidos_alumno}</Text>                        
+       </Left>
         <Body>
-          <Text>{this.props.item.nombre_alumno} {this.props.item.apellidos_alumno}</Text>                        
+          
         </Body>        
         <Right>
         <Text style={this.props.item.cargo == 0 ? styles.textoNormal:styles.textoAdeudaRojo}>Adeuda</Text>          
           <Text style={this.props.item.pagado ? styles.textoNormal:styles.textoAdeudaRojo}>$ {this.props.item.total_adeudo}</Text>                           
         </Right>
       </CardItem>        
-    </View>
+    </Card>
   )
  }
 }
