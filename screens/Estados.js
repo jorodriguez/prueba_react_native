@@ -13,109 +13,15 @@ import {
   TouchableOpacity,
   Alert,
   AsyncStorage,
-  FlatList, Modal
+  FlatList
 } from 'react-native';
 import { Container, Header, Content, Button, Icon, Accordion, List, ListItem, Text, Card, CardItem, Body, Right, Thumbnail, Left } from "native-base";
+
+import Modal from "react-native-modal";
 
 import Loader from './Loader';
 
 export default class Estados extends React.Component {
-  constructor(props) {
-    super(props);
-    this.listaCargos = [];
-    this.listaCargosPagados = [];
-
-    this.balance = {};
-
-    this.state = {
-      loading: false,
-      refreshing: false,
-      selected: (new Map()),
-      token: "",
-      usuarioSesion: null
-    }
-  }
-
-  componentDidMount() {
-
-  }
-
-  _recogerUsuarioSesion = async () => {
-    const user = await AsyncStorage.getItem('usuario');
-    const token = await AsyncStorage.getItem('userToken');
-    this.setState({ token: token });
-    this.setState({ usuarioSesion: JSON.parse(user) });
-    Alert.alert("usua", user);
-  };
-
-  _onRefresh = () => {
-
-  }
-  _onPressItem = (id) => {
-    this.setState((state) => {
-      const selected = new Map(state.selected);
-      selected.set(id, !selected.get(id)); // toggle
-      return { selected };
-    });
-
-  };
-
-
-  render() {
-    return (
-      <View style={styles.container}>
-        <Loader
-          loading={this.state.loading} />
-
-        <ScrollView
-          style={styles.container}
-          refreshControl={
-            <RefreshControl
-              refreshing={this.state.refreshing}
-              onRefresh={this._onRefresh}
-            />
-          }>     
-
-          <ListaBalances></ListaBalances>
-         
-        </ScrollView>
-      </View>
-    );
-  }
-}
-
-
-class ItemCargo extends React.Component {
-  constructor() {
-    super();
-  }
-
-  _onPress = () => {
-    //this.props.onPressItem(this.props.id);
-  };
-
-  componentDidMount() {
-
-  }
-
-  render() {
-    return (
-      <CardItem button onPress={() => { <PupupCargo visible={true} item={this.props.item} /> }} footer bordered>
-        <Body>
-          <Text style={this.props.item.pagado ? styles.textoPagado : styles.textoNormal}>{this.props.item.nombre_cargo}</Text>
-          <Text note style={{ fontSize: 10 }} >{this.props.item.nota}</Text>
-        </Body>
-        <Right>
-          <Text style={this.props.item.pagado ? styles.textoNormal : styles.textoAdeudaRojo} >$ {this.props.item.cargo}</Text>
-          {/*<Text>Pagado $ {this.props.item.total_pagado}</Text>          */}
-        </Right>
-      </CardItem>
-    );
-  }
-}
-
-
-class ListaBalances extends React.Component {
   constructor(props) {
     super(props);
     this.listaBalances = [];
@@ -137,6 +43,7 @@ class ListaBalances extends React.Component {
       });
   }
 
+
   _recogerUsuarioSesion = async () => {
     const user = await AsyncStorage.getItem('usuario');
     const token = await AsyncStorage.getItem('userToken');
@@ -144,8 +51,20 @@ class ListaBalances extends React.Component {
     this.setState({ usuarioSesion: JSON.parse(user) });
   };
 
-  _keyExtractorBalance = (item, index) => item.id.toString();
+  _onRefresh = () => {
+    this.setState({ refreshing: true });
+    this.getBalance();
+  }
 
+  _onPressItem = (id) => {
+    this.setState((state) => {
+      const selected = new Map(state.selected);
+      selected.set(id, !selected.get(id)); // toggle
+      return { selected };
+    });
+  };
+
+  _keyExtractorBalance = (item, index) => item.id.toString();
 
   _onPressItem = ({ id }) => {
     Alert.alert("seleccion", "ooo " + id);
@@ -188,18 +107,17 @@ class ListaBalances extends React.Component {
   renderItem = ({ item }) => {
     const text = `${item}`;
     return (
-      <TouchableOpacity onPress={() => alert("pressed!")}>
+      <TouchableOpacity onPress={() => Alert.alert("pressed!")}>
         <Card>
-          <CardItem 
-              style={{ backgroundColor: "#78CAA7" }}
-              button onPress={() => { <PupupCargo visible={true} item={this.props.item} /> }} footer bordered>
+          <CardItem
+            style={{ backgroundColor: "#78CAA7" }} footer bordered>
             <Body>
               <Text >{item.nombre_alumno}</Text>
             </Body>
             <Right>
               <Text style={item.pagado ? styles.textoNormal : styles.textoAdeudaRojo} >$ {item.total_adeudo}</Text>
             </Right>
-          </CardItem>          
+          </CardItem>
           <View>
             <FlatList
               data={item.array_cargos}
@@ -215,21 +133,65 @@ class ListaBalances extends React.Component {
 
   render() {
     return (
-      <View>
-        <Content style={styles.container}>
-          <Card>
-            <FlatList
-              data={this.listaBalances}
-              renderItem={this.renderItem}
-              keyExtractor={this._keyExtractorBalance}
+      <View style={styles.container}>
+        <Loader
+          loading={this.state.loading} />
+
+        <ScrollView
+          style={styles.container}
+          refreshControl={
+            <RefreshControl
+              refreshing={this.state.refreshing}
+              onRefresh={this._onRefresh}
             />
-          </Card>
-        </Content>
-        <Content>
-          <Card>
-          </Card>
-        </Content>
+          }>
+          <View>
+            <Content style={styles.container}>
+              <Card>
+                <FlatList
+                  data={this.listaBalances}
+                  renderItem={this.renderItem}
+                  keyExtractor={this._keyExtractorBalance}
+                />
+              </Card>
+            </Content>
+          </View>
+
+        </ScrollView>
       </View>
+    );
+  }
+}
+
+
+class ItemCargo extends React.Component {
+  constructor(props) {
+    super(props);
+    this.state = { isVisible: false };
+  }
+
+  _onPress = () => {
+    this.setState({ isVisible: !this.state.isVisible });
+  };
+
+  componentDidMount() {
+
+  }
+
+  render() {
+    return (
+      <CardItem button onPress={this._onPress} footer bordered>
+        <Body>
+          <Text style={this.props.item.pagado ? styles.textoPagado : styles.textoNormal}>{this.props.item.nombre_cargo}</Text>
+          <Text note style={{ fontSize: 10 }} >{this.props.item.nota}</Text>
+        </Body>
+        <Right>
+          <Text style={this.props.item.pagado ? styles.textoNormal : styles.textoAdeudaRojo} >$ {this.props.item.cargo}</Text>
+          {/*<Text>Pagado $ {this.props.item.total_pagado}</Text>          */}
+        </Right>
+        <PupupCargo visible={this.state.isVisible} item={this.props.item} />
+      </CardItem>
+
     );
   }
 }
@@ -275,11 +237,13 @@ class Balance extends React.Component {
 class PupupCargo extends React.Component {
   constructor(props) {
     super(props);
-    //this.visible = this.props.visible;
     this.state = { isVisible: this.props.visible };
   }
-  _onClose = () => {
-    this.visible = false;
+
+  _toggle = () => {
+
+    this.setState({ isVisible: !this.state.isVisible });
+
   };
   componentDidMount() {
 
@@ -287,9 +251,10 @@ class PupupCargo extends React.Component {
   render() {
     return (
       <Modal
+        customBackdrop={<View style={{ flex: 1 }} />}
         transparent={false}
         animationType={'fade'}
-        visible={this.state.isVisible}
+        visible={this.props.visible}
         onRequestClose={() => { console.log('close modal') }}>
 
         <Card>
@@ -297,7 +262,7 @@ class PupupCargo extends React.Component {
             <Text >{this.props.item.nombre_cargo}</Text>
           </CardItem>
           <CardItem footer>
-            <Button light onPress={this._onClose()}><Text> Cerrar </Text></Button>
+            <Button light onPress={this._toggle}><Text> Cerrar </Text></Button>
           </CardItem>
         </Card>
 
@@ -309,7 +274,7 @@ class PupupCargo extends React.Component {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#BCF0FF',
+    backgroundColor: '#CFFFBC',
   },
   textoPagado: {
     textDecorationLine: 'line-through',
@@ -318,7 +283,7 @@ const styles = StyleSheet.create({
   },
   textoAdeudaRojo: {
     color: 'red',
-    fontSize:12
+    fontSize: 12
   },
   bordeRojo: {
     borderColor: '#FF5B5B',
